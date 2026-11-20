@@ -1,0 +1,202 @@
+{
+  "days": {
+    "2026-11-13": {
+      "item_master": {
+        "bronze_rows": 6,
+        "clean_rows": 6,
+        "reject_rows": 0,
+        "reject_reasons": {}
+      },
+      "store_master": {
+        "bronze_rows": 3,
+        "clean_rows": 3,
+        "reject_rows": 0,
+        "reject_reasons": {}
+      },
+      "pos_sales": {
+        "bronze_rows": 8,
+        "clean_rows": 8,
+        "reject_rows": 0,
+        "reject_reasons": {},
+        "standardised_rows": 0,
+        "source_net": 3380,
+        "reject_net": 0,
+        "clean_net": 3380
+      },
+      "inventory_snapshot": {
+        "bronze_rows": 18,
+        "clean_rows": 18,
+        "reject_rows": 0,
+        "reject_reasons": {}
+      }
+    },
+    "2026-11-14": {
+      "item_master": {
+        "bronze_rows": 8,
+        "clean_rows": 6,
+        "reject_rows": 2,
+        "reject_reasons": {
+          "DUPLICATE_KEY": 1,
+          "NEGATIVE_AMOUNT": 1
+        }
+      },
+      "pos_sales": {
+        "bronze_rows": 8,
+        "clean_rows": 7,
+        "reject_rows": 1,
+        "reject_reasons": {
+          "NULL_STORE_ID": 1
+        },
+        "standardised_rows": 1,
+        "source_net": 4455,
+        "reject_net": 150,
+        "clean_net": 4305
+      },
+      "inventory_snapshot": {
+        "bronze_rows": 18,
+        "clean_rows": 18,
+        "reject_rows": 0,
+        "reject_reasons": {}
+      }
+    },
+    "2026-11-15": {
+      "item_master": {
+        "bronze_rows": 8,
+        "clean_rows": 6,
+        "reject_rows": 2,
+        "reject_reasons": {
+          "INVALID_VALUE": 1,
+          "NULL_SUBCLASS_ID": 1
+        }
+      },
+      "store_master": {
+        "bronze_rows": 5,
+        "clean_rows": 3,
+        "reject_rows": 2,
+        "reject_reasons": {
+          "DUPLICATE_KEY": 1,
+          "NULL_DISTRICT_ID": 1
+        }
+      },
+      "pos_sales": {
+        "bronze_rows": 12,
+        "clean_rows": 6,
+        "reject_rows": 6,
+        "reject_reasons": {
+          "NULL_ITEM_ID": 2,
+          "NEGATIVE_QTY": 1,
+          "ITEM_NOT_IN_MASTER": 1,
+          "DUPLICATE_LINE": 1,
+          "INVALID_VALUE": 1
+        },
+        "standardised_rows": 0,
+        "source_net": 4452,
+        "reject_net": 1192,
+        "clean_net": 3260
+      },
+      "inventory_snapshot": {
+        "bronze_rows": 20,
+        "clean_rows": 18,
+        "reject_rows": 2,
+        "reject_reasons": {
+          "NULL_ITEM_ID": 1,
+          "NULL_STORE_ID": 1
+        }
+      }
+    },
+    "2026-11-16": {
+      "item_master": {
+        "bronze_rows": 7,
+        "clean_rows": 6,
+        "reject_rows": 1,
+        "reject_reasons": {
+          "NULL_ITEM_ID": 1
+        }
+      },
+      "pos_sales": {
+        "bronze_rows": 9,
+        "clean_rows": 5,
+        "reject_rows": 4,
+        "reject_reasons": {
+          "UNKNOWN_STORE": 1,
+          "NEGATIVE_PRICE": 1,
+          "NEGATIVE_DISCOUNT": 1,
+          "ZERO_QTY": 1
+        },
+        "standardised_rows": 0,
+        "source_net": 830,
+        "reject_net": -210,
+        "clean_net": 1040
+      },
+      "inventory_snapshot": {
+        "bronze_rows": 19,
+        "clean_rows": 16,
+        "reject_rows": 3,
+        "reject_reasons": {
+          "ITEM_NOT_IN_MASTER": 1,
+          "INVALID_VALUE": 1,
+          "NEGATIVE_QTY": 1
+        }
+      }
+    },
+    "2026-11-17": {
+      "item_master": {
+        "bronze_rows": 6,
+        "clean_rows": 6,
+        "reject_rows": 0,
+        "reject_reasons": {}
+      },
+      "pos_sales": {
+        "bronze_rows": 9,
+        "clean_rows": 4,
+        "reject_rows": 5,
+        "reject_reasons": {
+          "TXN_DATE_MISMATCH": 1,
+          "NET_MISMATCH": 1,
+          "DISCOUNT_TOO_HIGH": 1,
+          "NULL_TXN_KEY": 1,
+          "INVALID_VALUE": 1
+        },
+        "standardised_rows": 0,
+        "source_net": 1975,
+        "reject_net": 385,
+        "clean_net": 1590
+      },
+      "inventory_snapshot": {
+        "bronze_rows": 21,
+        "clean_rows": 18,
+        "reject_rows": 3,
+        "reject_reasons": {
+          "UNKNOWN_STORE": 1,
+          "DUPLICATE_KEY": 1,
+          "SNAPSHOT_DATE_MISMATCH": 1
+        }
+      }
+    }
+  },
+  "totals": {
+    "item_master": {
+      "bronze_rows": 35,
+      "clean_rows": 30,
+      "reject_rows": 5
+    },
+    "store_master": {
+      "bronze_rows": 8,
+      "clean_rows": 6,
+      "reject_rows": 2
+    },
+    "pos_sales": {
+      "bronze_rows": 46,
+      "clean_rows": 30,
+      "reject_rows": 16,
+      "source_net": 15092,
+      "reject_net": 1517,
+      "clean_net": 13575
+    },
+    "inventory_snapshot": {
+      "bronze_rows": 96,
+      "clean_rows": 88,
+      "reject_rows": 8
+    }
+  }
+}

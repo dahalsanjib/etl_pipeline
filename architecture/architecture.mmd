@@ -1,0 +1,115 @@
+flowchart LR
+    %% ───────────────────── SOURCES ─────────────────────
+    subgraph SOURCES["📂 Sources — data/source/*.csv"]
+        direction TB
+        F1["item_master_yyyymmdd.csv\n(daily, required)"]
+        F2["store_master_yyyymmdd.csv\n(periodic, optional)"]
+        F3["pos_sales_yyyymmdd.csv\n(daily, required)"]
+        F4["inventory_snapshot_yyyymmdd.csv\n(daily, required)"]
+    end
+
+    %% ───────────────────── AIRFLOW ORCHESTRATION ─────────────────────
+    subgraph AIRFLOW["⚙️ Airflow 3.3 — full_etl_pipeline DAG\n@daily | max_active_runs=1 | retries=2 @ 5 min"]
+        direction LR
+        SENSE["wait_for_files\n(sensor, poke 30s, timeout 600s)"]
+        PLAN["build_load_list\n+ register_batch\n(CTL.C_PARAM)"]
+    end
+
+    %% ───────────────────── BRONZE LAYER ─────────────────────
+    subgraph BRONZE["🥉 Bronze — STG schema\nAll VARCHAR + metadata cols\nRetention: 90 days\nReload: DELETE date, re-INSERT (idempotent)"]
+        direction TB
+        BLOAD["load_bronze\n(dynamic: 1 task per feed)\nPUT → Snowflake stage\nCOPY INTO STG.*"]
+        STG1["STG.STG_ITEM_MASTER"]
+        STG2["STG.STG_STORE_MASTER"]
+        STG3["STG.STG_POS_SALES"]
+        STG4["STG.STG_INVENTORY_SNAPSHOT"]
+        BLOAD --> STG1 & STG2 & STG3 & STG4
+    end
+
+    %% ───────────────────── SILVER LAYER ─────────────────────
+    subgraph SILVER["🥈 Silver — TMP schema\nTyped, trimmed, uppercased clean rows\nRetention: 30 days\nReload: DELETE date, re-INSERT (idempotent)"]
+        direction TB
+        SRUN["run_silver\n(stage 1: masters first,\nthen stage 2: txn + inv)"]
+        TMP1["TMP.TMP_ITEM_MASTER"]
+        TMP2["TMP.TMP_STORE_MASTER"]
+        TMP3["TMP.TMP_POS_SALES"]
+        TMP4["TMP.TMP_INVENTORY_SNAPSHOT"]
+        SRUN --> TMP1 & TMP2 & TMP3 & TMP4
+    end
+
+    %% ───────────────────── GOLD LAYER ─────────────────────
+    subgraph GOLD["🥇 Gold — TGT schema\nStar schema with surrogate keys\nRetention: indefinite\nReload: SCD2 close+insert changed, FCT_SALES delete+insert"]
+        direction TB
+        GDIMS["load_gold_dims"]
+        GFACTS["load_gold_facts"]
+        DIM_SC["TGT.DIM_SUBCLASS\n(SCD1 — MERGE overwrite)"]
+        DIM_DI["TGT.DIM_DISTRICT\n(SCD1 — MERGE overwrite)"]
+        DIM_IT["TGT.DIM_ITEM\n(SCD2 — hash compare,\nEFF_FROM/TO, CURR_FLG)"]
+        DIM_LO["TGT.DIM_LOCN\n(SCD2 — hash compare,\nEFF_FROM/TO, CURR_FLG)"]
+        FCT_S["TGT.FCT_SALES\n(txn line grain,\njoin dim version effective on txn date)"]
+        FCT_I["TGT.FCT_INVENTORY\n(positional fact,\nhash compare, open row until qty change)"]
+        GDIMS --> DIM_SC & DIM_DI & DIM_IT & DIM_LO
+        GFACTS --> FCT_S & FCT_I
+    end
+
+    %% ───────────────────── CONTROL / CONSUMERS ─────────────────────
+    subgraph CONTROL["🗂️ Control — CTL schema\nRetention: logs 1 yr, rejects 90 days"]
+        direction TB
+        BLOG["CTL.C_BATCH_LOG\n(step, status, rows, timing, error)"]
+        BREJ["CTL.C_REJ_TABLE\n(feed, rule_id, reason, RAW_ROW, hash)"]
+        BPAR["CTL.C_PARAM\n(batch_id, business_date, run_type)"]
+        BLDT["CTL.C_LOAD_DATES\n(target, last_load_date, batch_id)"]
+    end
+
+    subgraph ARCHIVE["📦 Archive\ndata/archive/yyyymmdd/\nRetention: 1 year"]
+        ARC["Archived CSV copies"]
+    end
+
+    subgraph RECON_BOX["✅ Reconcile Task"]
+        RECON["reconcile\n(reconcile.sql)"]
+    end
+
+    subgraph CONSUMERS["👥 Consumers"]
+        direction TB
+        BI["BI / Reporting\n(Snowsight, dashboards)"]
+        AUDIT["Audit & Compliance\n(batch log, rejects, load dates)"]
+        OPS["Ops & Alerting\n(WARNING in C_BATCH_LOG)"]
+    end
+
+    %% ───────────────────── QUALITY RULES ─────────────────────
+    subgraph RULES["📋 Quality Rules Summary"]
+        direction TB
+        R1["R1: Required file exists with ≥1 data row\nBoundary: Source → Bronze\n❌ Action: FAIL the run"]
+        R2["R2: Business keys NOT NULL\n(ITEM_ID, STORE_ID, TXN_ID/LINE, SUBCLASS_ID, DISTRICT_ID)\nBoundary: Bronze → Silver\n🔒 Action: QUARANTINE row to C_REJ_TABLE"]
+        R3["R3: Values cast to correct type\n(numbers, dates via TRY_TO_NUMBER/DATE)\nBoundary: Bronze → Silver\n🔒 Action: QUARANTINE row to C_REJ_TABLE"]
+        R4["R4: Referential integrity\n(item/store exist in clean TMP masters)\nBoundary: Bronze → Silver\n🔒⚠️ Action: QUARANTINE row + ALERT\n(C_BATCH_LOG status=WARNING, run continues)"]
+        R5["R5: Range & formula checks\n(no negative qty/price/discount/cost,\nno zero qty on sales, discount ≤ gross,\nnet = qty×price−discount, date = file_date)\nBoundary: Bronze → Silver\n🔒 Action: QUARANTINE row to C_REJ_TABLE"]
+        R6["R6: No duplicate keys in file\n(first row by SRC_ROW_NUM kept)\nBoundary: Bronze → Silver\n🔒 Action: QUARANTINE later rows to C_REJ_TABLE"]
+        R7["R7: Row-count balance\nbronze_rows = silver_rows + rejected_rows\nBoundary: Silver end-of-step\n❌ Action: FAIL the run"]
+        R8["R8: Gold reconciliation\n(ROWCOUNT_SALES, AMOUNT_SALES,\nORPHANS_SALES, FRESHNESS_SALES,\nDUPLICATES_SALES, ROWCOUNT_INVENTORY,\nPOSITIONS_INVENTORY, DUPLICATES_INVENTORY)\nBoundary: After Gold facts load\n❌ Action: FAIL the run\n(C_LOAD_DATES NOT updated)"]
+        GUARD["Guard: Out-of-order load block\n(run_date ≤ last Gold load date?)\nBoundary: Silver → Gold\n❌ Action: FAIL before changing Gold\nPolicy: truncate TGT + replay from first date"]
+    end
+
+    %% ───────────────────── FLOW EDGES ─────────────────────
+    F1 & F2 & F3 & F4 --> SENSE
+    SENSE -->|"R1: file missing or empty → FAIL"| PLAN
+    PLAN --> BLOAD
+    BLOAD -->|"Row count file ≠ loaded → FAIL"| SRUN
+    BLOAD --> ARC
+    SRUN -->|"R2–R6: bad rows → QUARANTINE\nR7: count mismatch → FAIL\nR4 rejects → ALERT (WARNING)"| GDIMS
+    GDIMS -->|"Guard: out-of-order → FAIL"| GFACTS
+    GFACTS --> RECON
+    RECON -->|"R8: any check ≠ PASS → FAIL\nAll PASS → update C_LOAD_DATES"| BLDT
+
+    %% ───────────────────── LOGGING & REJECT EDGES ─────────────────────
+    BLOAD -.->|"log"| BLOG
+    SRUN -.->|"log"| BLOG
+    SRUN -.->|"rejected rows"| BREJ
+    GDIMS -.->|"log"| BLOG
+    GFACTS -.->|"log"| BLOG
+    RECON -.->|"log"| BLOG
+
+    %% ───────────────────── CONSUMER EDGES ─────────────────────
+    DIM_SC & DIM_DI & DIM_IT & DIM_LO & FCT_S & FCT_I -->|"star schema"| BI
+    BLOG & BREJ & BLDT -->|"audit trail"| AUDIT
+    BLOG -->|"WARNING status\n(R4 alerts)"| OPS

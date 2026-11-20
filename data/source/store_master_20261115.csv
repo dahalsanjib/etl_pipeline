@@ -1,0 +1,6 @@
+STORE_ID,STORE_NAME,CITY,DISTRICT_ID,DISTRICT_NAME
+S001,Thamel Store,Kathmandu,D01,Kathmandu
+S002,Patan Store,Lalitpur,D02,Lalitpur
+S003,Bhaktapur Store,Bhaktapur,D02,Lalitpur
+S002,Patan Store,Lalitpur,D02,Lalitpur
+S004,Lakeside Store,Pokhara,,
