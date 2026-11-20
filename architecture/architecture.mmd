@@ -46,7 +46,8 @@ flowchart LR
         DIM_DI["TGT.DIM_DISTRICT\n(SCD1 — MERGE overwrite)"]
         DIM_IT["TGT.DIM_ITEM\n(SCD2 — hash compare,\nEFF_FROM/TO, CURR_FLG)"]
         DIM_LO["TGT.DIM_LOCN\n(SCD2 — hash compare,\nEFF_FROM/TO, CURR_FLG)"]
-        FCT_S["TGT.FCT_SALES\n(txn line grain,\njoin dim version effective on txn date)"]
+        DIM_DT["TGT.DIM_DATE\n(Conformed static calendar —\nDATE_KEY, ISO week, month, qtr, weekend)"]
+        FCT_S["TGT.FCT_SALES\n(txn line grain, joins DIM_DATE\n& dim version effective on txn date)"]
         FCT_I["TGT.FCT_INVENTORY\n(positional fact,\nhash compare, open row until qty change)"]
         GDIMS --> DIM_SC & DIM_DI & DIM_IT & DIM_LO
         GFACTS --> FCT_S & FCT_I
@@ -110,6 +111,6 @@ flowchart LR
     RECON -.->|"log"| BLOG
 
     %% ───────────────────── CONSUMER EDGES ─────────────────────
-    DIM_SC & DIM_DI & DIM_IT & DIM_LO & FCT_S & FCT_I -->|"star schema"| BI
+    DIM_SC & DIM_DI & DIM_IT & DIM_LO & DIM_DT & FCT_S & FCT_I -->|"star schema"| BI
     BLOG & BREJ & BLDT -->|"audit trail"| AUDIT
     BLOG -->|"WARNING status\n(R4 alerts)"| OPS

@@ -101,17 +101,43 @@ The answer key is `tests/expected_totals.json`. Padded and lowercase ids on 14 N
 erDiagram
     DIM_SUBCLASS ||--o{ DIM_ITEM : "SUBCLASS_KY"
     DIM_DISTRICT ||--o{ DIM_LOCN : "DISTRICT_KY"
+    DIM_DATE ||--o{ FCT_SALES : "DATE_KEY"
     DIM_ITEM ||--o{ FCT_SALES : "ITEM_KY"
     DIM_LOCN ||--o{ FCT_SALES : "LOCN_KY"
     DIM_ITEM ||--o{ FCT_INVENTORY : "ITEM_KY"
     DIM_LOCN ||--o{ FCT_INVENTORY : "LOCN_KY"
-    DIM_SUBCLASS { number SUBCLASS_KY PK
+
+    DIM_SUBCLASS {
+        number SUBCLASS_KY PK
         string SUBCLASS_ID
-        string SUBCLASS_NAME }
-    DIM_DISTRICT { number DISTRICT_KY PK
+        string SUBCLASS_NAME
+    }
+    DIM_DISTRICT {
+        number DISTRICT_KY PK
         string DISTRICT_ID
-        string DISTRICT_NAME }
-    DIM_ITEM { number ITEM_KY PK
+        string DISTRICT_NAME
+    }
+    DIM_DATE {
+        number DATE_KEY PK
+        date CALENDAR_DATE
+        number DAY_OF_WEEK
+        string DAY_NAME
+        number DAY_OF_MONTH
+        number DAY_OF_YEAR
+        number ISO_WEEK
+        number ISO_YEAR
+        string ISO_WEEK_YEAR
+        date ISO_WEEK_START_DATE
+        date ISO_WEEK_END_DATE
+        number MONTH
+        string MONTH_NAME
+        number QUARTER
+        number YEAR
+        string YEAR_MONTH
+        string WEEKEND_FLAG
+    }
+    DIM_ITEM {
+        number ITEM_KY PK
         string ITEM_ID
         string ITEM_NAME
         number SUBCLASS_KY FK
@@ -121,31 +147,39 @@ erDiagram
         string STATUS
         date EFF_FROM_DT
         date EFF_TO_DT
-        string CURR_FLG }
-    DIM_LOCN { number LOCN_KY PK
+        string CURR_FLG
+    }
+    DIM_LOCN {
+        number LOCN_KY PK
         string STORE_ID
         string STORE_NAME
         string CITY
         number DISTRICT_KY FK
         date EFF_FROM_DT
         date EFF_TO_DT
-        string CURR_FLG }
-    FCT_SALES { string TXN_ID
+        string CURR_FLG
+    }
+    FCT_SALES {
+        string TXN_ID
         number TXN_LINE_NO
+        number DATE_KEY FK
         date DAY_DT
         number ITEM_KY FK
         number LOCN_KY FK
         number QTY
         number UNIT_PRICE
         number DISCOUNT_AMT
-        number NET_SALES_AMT }
-    FCT_INVENTORY { number ITEM_KY FK
+        number NET_SALES_AMT
+    }
+    FCT_INVENTORY {
+        number ITEM_KY FK
         number LOCN_KY FK
         number ONHAND_QTY
         number ONORDER_QTY
         date EFF_FROM_DT
         date EFF_TO_DT
-        string CURR_FLG }
+        string CURR_FLG
+    }
 ```
 
 ## Evidence
