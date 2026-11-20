@@ -25,6 +25,6 @@ Every rule has a layer boundary (where it is checked) and a failure action. Reje
 
 A row with several problems gets the first reason in the order above (rule order).
 
-## R8 reconciliation checks (`include/sql/reconcile.sql`)
+## R8 reconciliation checks (`include/sql/control/reconcile.sql`)
 
 `ROWCOUNT_SALES`, `AMOUNT_SALES` (Gold net + rejected raw net = source file net), `ORPHANS_SALES`, `FRESHNESS_SALES`, `DUPLICATES_SALES`, `ROWCOUNT_INVENTORY`, `POSITIONS_INVENTORY`, `DUPLICATES_INVENTORY`.

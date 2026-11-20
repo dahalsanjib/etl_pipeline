@@ -14,7 +14,10 @@ Airflow pipeline that loads four daily feeds into a Snowflake dimensional model 
 ```
 dags/full_etl_pipeline.py        the DAG
 include/config/feeds.yaml      feeds, columns, Gold steps
-include/sql/                   Silver, Gold and reconcile SQL (one file per target)
+include/sql/
+  silver/                      Silver transformation scripts (TMP.*)
+  gold/                        Gold dimension and fact scripts (TGT.*)
+  control/                     reconciliation and param scripts
 include/scripts/               sample data generator
 model/                         DDL for STG, TMP, TGT, CTL
 architecture/                  architecture, quality gates, policies

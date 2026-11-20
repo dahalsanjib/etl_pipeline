@@ -170,7 +170,7 @@ def test_reconcile_is_one_statement(dag_module, config):
 
 
 def test_date_and_batch_are_substituted(dag_module):
-    text = " ".join(dag_module.read_sql({"sql_dir": str(SQL_DIR)}, "tgt_fct_sales.sql", "2026-11-15", "BATCH_X"))
+    text = " ".join(dag_module.read_sql({"sql_dir": str(SQL_DIR)}, "gold/tgt_fct_sales.sql", "2026-11-15", "BATCH_X"))
     assert "'2026-11-15'" in text
     assert "'BATCH_X'" in text
 

@@ -5,16 +5,16 @@ control:
   rej_table: CTL.C_REJ_TABLE
 
 gold_dims:
-  - {script: tgt_dim_subclass.sql, target: TGT.DIM_SUBCLASS, count_sql: "SELECT COUNT(*) FROM {target}"}
-  - {script: tgt_dim_district.sql, target: TGT.DIM_DISTRICT, count_sql: "SELECT COUNT(*) FROM {target}"}
-  - {script: tgt_dim_item.sql, target: TGT.DIM_ITEM, count_sql: "SELECT COUNT(*) FROM {target}"}
-  - {script: tgt_dim_locn.sql, target: TGT.DIM_LOCN, count_sql: "SELECT COUNT(*) FROM {target}"}
+  - {script: gold/tgt_dim_subclass.sql, target: TGT.DIM_SUBCLASS, count_sql: "SELECT COUNT(*) FROM {target}"}
+  - {script: gold/tgt_dim_district.sql, target: TGT.DIM_DISTRICT, count_sql: "SELECT COUNT(*) FROM {target}"}
+  - {script: gold/tgt_dim_item.sql, target: TGT.DIM_ITEM, count_sql: "SELECT COUNT(*) FROM {target}"}
+  - {script: gold/tgt_dim_locn.sql, target: TGT.DIM_LOCN, count_sql: "SELECT COUNT(*) FROM {target}"}
 
 gold_facts:
-  - {script: tgt_fct_sales.sql, target: TGT.FCT_SALES, count_sql: "SELECT COUNT(*) FROM {target} WHERE DAY_DT = '{fd}'"}
-  - {script: tgt_fct_inventory.sql, target: TGT.FCT_INVENTORY, count_sql: "SELECT COUNT(*) FROM {target} WHERE EFF_FROM_DT <= '{fd}' AND EFF_TO_DT >= '{fd}'"}
+  - {script: gold/tgt_fct_sales.sql, target: TGT.FCT_SALES, count_sql: "SELECT COUNT(*) FROM {target} WHERE DAY_DT = '{fd}'"}
+  - {script: gold/tgt_fct_inventory.sql, target: TGT.FCT_INVENTORY, count_sql: "SELECT COUNT(*) FROM {target} WHERE EFF_FROM_DT <= '{fd}' AND EFF_TO_DT >= '{fd}'"}
 
-reconcile_script: reconcile.sql
+reconcile_script: control/reconcile.sql
 
 feeds:
   item_master:
@@ -22,7 +22,7 @@ feeds:
     table: STG_ITEM_MASTER
     required_daily: true
     stage: 1
-    silver_script: tmp_item_master.sql
+    silver_script: silver/tmp_item_master.sql
     silver_table: TMP.TMP_ITEM_MASTER
     columns: [ITEM_ID, ITEM_NAME, SUBCLASS_ID, SUBCLASS_NAME, BRAND, UNIT_COST, UNIT_PRICE, STATUS]
   store_master:
@@ -30,7 +30,7 @@ feeds:
     table: STG_STORE_MASTER
     required_daily: false
     stage: 1
-    silver_script: tmp_store_master.sql
+    silver_script: silver/tmp_store_master.sql
     silver_table: TMP.TMP_STORE_MASTER
     columns: [STORE_ID, STORE_NAME, CITY, DISTRICT_ID, DISTRICT_NAME]
   pos_sales:
@@ -38,7 +38,7 @@ feeds:
     table: STG_POS_SALES
     required_daily: true
     stage: 2
-    silver_script: tmp_pos_sales.sql
+    silver_script: silver/tmp_pos_sales.sql
     silver_table: TMP.TMP_POS_SALES
     columns: [TXN_ID, TXN_LINE_NO, TXN_DATE, STORE_ID, ITEM_ID, QTY, UNIT_PRICE, DISCOUNT_AMT, NET_SALES_AMT]
   inventory_snapshot:
@@ -46,6 +46,6 @@ feeds:
     table: STG_INVENTORY_SNAPSHOT
     required_daily: true
     stage: 2
-    silver_script: tmp_inventory_snapshot.sql
+    silver_script: silver/tmp_inventory_snapshot.sql
     silver_table: TMP.TMP_INVENTORY_SNAPSHOT
     columns: [SNAPSHOT_DATE, STORE_ID, ITEM_ID, ONHAND_QTY, ONORDER_QTY]
